@@ -81,7 +81,7 @@ view model =
                             , i [] [ text mainProfile.byline ]
                             ]
                         ]
-                    , h2 [ class "mt-5" ] [ text "Portfolio" ]
+                    , h2 [ class "mt-5" ] [ text "Rps" ]
                     , hr [] []
                     , div [ class "row" ]
                         (List.map
@@ -173,13 +173,13 @@ navButtonDecoder =
 
 
 host =
-    "https://portfolio-api.robdev.ca"
+    "https://rps-api.robdev.ca"
 
 
 getMain : Cmd Msg
 getMain =
     Http.get
-        { url = host ++ "/portfolio/main"
+        { url = host ++ "/rps/main"
         , expect = Http.expectJson MainReceived mainDecoder
         }
 
@@ -187,7 +187,7 @@ getMain =
 getItems : Cmd Msg
 getItems =
     Http.get
-        { url = host ++ "/portfolio-item"
+        { url = host ++ "/rps-item"
         , expect = Http.expectJson ItemsReceived (Decode.list itemDecoder)
         }
 

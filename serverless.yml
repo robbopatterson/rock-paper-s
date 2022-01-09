@@ -1,4 +1,4 @@
-service: portfolio
+service: rps
 
 frameworkVersion: '2'
 
@@ -6,14 +6,14 @@ plugins:
   - serverless-domain-manager
   - serverless-s3-sync
 custom:
-  tableName: '${opt:stage, self:provider.stage}-portfolio'
+  tableName: '${opt:stage, self:provider.stage}-rps'
   siteName: robdev.ca
   s3Sync:
       - bucketName: ${self:custom.siteName}
         localDir: ui/dist
 
   customDomain:
-    domainName: portfolio-api.robdev.ca
+    domainName: rps-api.robdev.ca
     stage: dev
     basePath: 
     certificateName: '*.robdev.ca'
@@ -32,7 +32,7 @@ provider:
   region: us-west-2
 
   environment:
-    PORTFOLIO_TABLE: ${self:custom.tableName}
+    RPS_TABLE: ${self:custom.tableName}
 
   iam:
     role:
@@ -42,7 +42,7 @@ provider:
           Action:
             - dynamodb:*
           Resource:
-            - Fn::GetAtt: [ PortfolioTable, Arn ]
+            - Fn::GetAtt: [ RpsTable, Arn ]
 
 functions:
   httpHandler:
@@ -64,7 +64,7 @@ functions:
 
 resources:
   Resources:
-    PortfolioTable:
+    RpsTable:
       Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
