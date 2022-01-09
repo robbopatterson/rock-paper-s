@@ -6,9 +6,23 @@ const cors = require('cors');
 const serverless = require("serverless-http");
 const AWS = require("aws-sdk");
 const dynamoDbClient = new AWS.DynamoDB.DocumentClient({ region: "us-west-2" });
+const { uniqueNamesGenerator, starWars } = require('unique-names-generator');
 
 app.use(cors());
 app.use(express.json()) // for parsing application/json
+
+
+app.get('/RandomName', async function (req, res) {
+  try {
+    const randomName = uniqueNamesGenerator({ dictionaries: [starWars] }); 
+    res.json({
+      name: randomName
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Unexpected exception', err });
+  }
+})
+
 
 app.get('/:entity/:id', async function (req, res) {
   const params = {
