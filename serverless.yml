@@ -1,0 +1,112 @@
+service: portfolio
+
+frameworkVersion: '2'
+
+plugins:
+  - serverless-domain-manager
+  - serverless-s3-sync
+custom:
+  tableName: '${opt:stage, self:provider.stage}-portfolio'
+  siteName: robdev.ca
+  s3Sync:
+      - bucketName: ${self:custom.siteName}
+        localDir: ui/dist
+
+  customDomain:
+    domainName: portfolio-api.robdev.ca
+    stage: dev
+    basePath: 
+    certificateName: '*.robdev.ca'
+    createRoute53Record: true
+    endpointType: 'regional'
+    securityPolicy: tls_1_2
+    apiType: rest
+    autoDomain: false
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+
+  stage: dev
+  region: us-west-2
+
+  environment:
+    PORTFOLIO_TABLE: ${self:custom.tableName}
+
+  iam:
+    role:
+      statements:
+
+        - Effect: Allow
+          Action:
+            - dynamodb:*
+          Resource:
+            - Fn::GetAtt: [ PortfolioTable, Arn ]
+
+functions:
+  httpHandler:
+    handler: handler.httpHandler
+    events:
+      - http:
+          path: /{proxy+}
+          method: ANY
+          cors:
+            origins:
+                - '*'
+            headers:
+                - Content-Type
+                - X-Amz-Date
+                - Authorization
+                - X-Api-Key
+                - X-Amz-Security-Token
+            allowCredentials: false
+
+resources:
+  Resources:
+    PortfolioTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
+            AttributeType: S
+        KeySchema:
+          - AttributeName: pk
+            KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:custom.tableName}      
+
+    StaticSite:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        BucketName: ${self:custom.siteName}
+        WebsiteConfiguration:
+          IndexDocument: index.html
+    StaticSiteS3BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: StaticSite
+        PolicyDocument:
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: "*"
+              Action:
+              - s3:GetObject
+              Resource:
+                Fn::Join: [
+                  "", [
+                    "arn:aws:s3:::",
+                    {
+                      "Ref": "StaticSite"
+                    },
+                    "/*"
+                  ]
+                ]

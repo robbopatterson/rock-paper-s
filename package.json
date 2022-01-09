@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "deploy": "cd ui && elm make Src/HomePage.elm --output dist/elm.js && cd .. && serverless deploy"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1013.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "serverless-http": "^2.7.0"
+  },
+  "devDependencies": {
+    "serverless-domain-manager": "^5.1.5",
+    "serverless-s3-sync": "^1.17.3"
+  }
+}
