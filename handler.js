@@ -7,6 +7,7 @@ const serverless = require("serverless-http");
 const AWS = require("aws-sdk");
 const dynamoDbClient = new AWS.DynamoDB.DocumentClient({ region: "us-west-2" });
 const { uniqueNamesGenerator, starWars } = require('unique-names-generator');
+const { getThrowResponse } = require('./rpsService');
 
 app.use(cors());
 app.use(express.json()) // for parsing application/json
@@ -14,15 +15,21 @@ app.use(express.json()) // for parsing application/json
 
 app.get('/RandomName', async function (req, res) {
   try {
-    const randomName = uniqueNamesGenerator({ dictionaries: [starWars] }); 
-    res.json({
-      name: randomName
-    });
+    const randomName = uniqueNamesGenerator({ dictionaries: [starWars] });
+    res.json({ name: randomName });
   } catch (err) {
     res.status(500).json({ message: 'Unexpected exception', err });
   }
 })
 
+app.post('/ThrowDown', async function (req, res) {
+  try {
+    const response = await getThrowResponse(req.body.name, req.body.type);
+    res.json(response);
+  } catch (err) {
+    res.status(500).json({ message: 'Unexpected exception', err });
+  }
+})
 
 app.get('/:entity/:id', async function (req, res) {
   const params = {
